@@ -1,8 +1,8 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Inter } from "next/font/google";
+import { Inter, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 
-const display = Cormorant_Garamond({
+const display = Space_Grotesk({
   subsets: ["latin"],
   variable: "--font-display",
   weight: ["500", "600", "700"]
@@ -14,29 +14,29 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://amb-dr-isha-farha-quraishy.openai.site"),
-  title: "Amb. Dr. Isha Farha Quraishy | Cinematic Portfolio",
+  metadataBase: new URL("https://neon-tourism-fze.openai.site"),
+  title: "NEON TOURISM FZE | AI Travel, WhatsApp Sales Agent, CRM",
   description:
-    "A luxury 3D digital journey for Amb. Dr. Isha Farha Quraishy: Miss UAE, Forbes featured personality, speaker, humanitarian, and entrepreneur.",
+    "Premium AI-powered travel platform for NEON TOURISM FZE with website, WhatsApp sales agent, CRM, booking system, admin tools, and analytics dashboard.",
   openGraph: {
-    title: "Amb. Dr. Isha Farha Quraishy",
+    title: "NEON TOURISM FZE",
     description:
-      "Cinematic 3D portfolio experience for a global tech celebrity and public speaker.",
-    images: ["/images/isha-forbes-cover.png"],
+      "Dubai travel concierge platform combining luxury website, WhatsApp AI, CRM, booking, and sales analytics.",
+    images: ["https://neontourism.com/wp-content/uploads/2024/11/listing-6.jpg"],
     type: "website"
   },
   twitter: {
     card: "summary_large_image",
-    title: "Amb. Dr. Isha Farha Quraishy",
+    title: "NEON TOURISM FZE",
     description:
-      "Luxury cinematic 3D portfolio experience for Amb. Dr. Isha Farha Quraishy.",
-    images: ["/images/isha-forbes-cover.png"]
+      "AI-powered travel website and CRM for Neon Tourism in Dubai.",
+    images: ["https://neontourism.com/wp-content/uploads/2024/11/listing-6.jpg"]
   }
 };
 
 export const viewport: Viewport = {
-  themeColor: "#020817",
-  colorScheme: "dark"
+  themeColor: "#06111f",
+  colorScheme: "dark light"
 };
 
 export default function RootLayout({

@@ -1,638 +1,761 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import Image from "next/image";
-import { Suspense, useEffect, useMemo, useRef, useState } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { useEffect, useMemo, useState } from "react";
+import { motion } from "framer-motion";
 import {
-  Environment,
-  Float,
-  MeshTransmissionMaterial,
-  PerspectiveCamera,
-  Text,
-  Torus,
-  useTexture
-} from "@react-three/drei";
-import { EffectComposer, Bloom, DepthOfField, Vignette } from "@react-three/postprocessing";
-import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import Lenis from "@studio-freight/lenis";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import {
-  ArrowRight,
+  BarChart3,
   Bot,
+  BriefcaseBusiness,
+  Building2,
   CalendarDays,
-  ChevronDown,
-  Images,
+  Car,
+  Check,
+  ChevronRight,
+  CircleDollarSign,
+  ClipboardList,
+  Clock3,
+  Contact,
+  FileText,
+  Gauge,
+  Globe2,
+  Hotel,
+  Landmark,
+  LockKeyhole,
   Mail,
-  Mic2,
+  MapPin,
+  Menu,
+  MessageCircle,
+  Plane,
+  Plus,
+  Search,
   Send,
+  ShipWheel,
   Sparkles,
   Star,
-  Trophy,
+  Ticket,
+  Users,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import type { Group, Mesh } from "three";
 
-const Particles = dynamic(
-  () => import("@tsparticles/react").then((mod) => mod.Particles),
-  { ssr: false }
-);
+type Service = {
+  title: string;
+  icon: typeof Plane;
+  summary: string;
+  destinations: string[];
+  price: string;
+  processing: string;
+  inclusions: string[];
+  documents: string[];
+  policy: string;
+};
 
-const portraits = [
-  { src: "/images/isha-crown-blue.jpeg", alt: "Dr. Isha Farha Quraishy wearing a crown and Miss UAE sash" },
-  { src: "/images/isha-stage-wave.jpeg", alt: "Dr. Isha Farha Quraishy waving on stage in a crown" },
-  { src: "/images/isha-green-gown.jpeg", alt: "Dr. Isha Farha Quraishy at Dubai Model Showcase" },
-  { src: "/images/isha-stage-profile.jpeg", alt: "Dr. Isha Farha Quraishy in profile on a dark stage" },
-  { src: "/images/isha-forbes-cover.png", alt: "Forbes New York cover featuring Dr. Isha Farha Quraishy" }
-];
+type Lead = {
+  id: string;
+  name: string;
+  phone: string;
+  whatsapp: string;
+  email: string;
+  nationality: string;
+  residence: string;
+  destination: string;
+  travelDate: string;
+  returnDate: string;
+  adults: string;
+  children: string;
+  hotel: string;
+  budget: string;
+  service: string;
+  status: string;
+  priority: string;
+  source: string;
+  assigned: string;
+  updated: string;
+  notes: string;
+};
 
-const titles = [
-  "Miss UAE",
-  "Forbes Featured",
-  "Global Tech Celebrity",
-  "International Public Speaker",
-  "Humanitarian",
-  "Entrepreneur"
-];
+type Message = {
+  role: "user" | "assistant";
+  text: string;
+};
 
-const logos = [
-  ["Forbes", "Featured cover story energy with New York editorial prestige."],
-  ["Khaleej Times", "Regional media presence across UAE business and culture."],
-  ["Arab News", "A voice carried through international public conversation."],
-  ["Gulf News", "Gulf visibility for leadership, style, and impact."],
-  ["ZEE TV", "Broadcast recognition for a cross-cultural public figure."],
-  ["UAE Times", "Home-region spotlight on ambition and service."],
-  ["Mrs. United Nations", "Crowned representation on a global pageant stage."]
-];
-
-const milestones = [
-  "Crowned Mrs. United Nations",
-  "Miss UAE recognition",
-  "Forbes New York feature",
-  "Global public speaking tours",
-  "Humanitarian initiatives",
-  "Entrepreneurial ventures"
-];
-
-const achievements = [
+const services: Service[] = [
   {
-    title: "Global Tech Celebrity",
-    detail:
-      "A public persona shaped around technology, leadership visibility, and future-facing cultural influence across global audiences."
+    title: "Visa Services",
+    icon: FileText,
+    summary:
+      "UAE 30 and 60 day travel visas plus Dependent, Parent, Freelance, Golden, business, and tourist visa support for international destinations.",
+    destinations: ["UAE", "Schengen", "UK", "USA", "Singapore", "Japan"],
+    price: "Quotation based on nationality, visa type, and urgency",
+    processing: "Standard and express options subject to embassy and immigration approval",
+    inclusions: ["Document checklist", "Application review", "Submission guidance", "Status follow-up"],
+    documents: ["Passport copy", "Photo", "Residence visa or Emirates ID when applicable", "Travel plan"],
+    policy: "Visa fees and refunds depend on authority rules; complex cases are transferred to a human consultant."
   },
   {
-    title: "International Public Speaker",
-    detail:
-      "Stage presence designed for leadership forums, luxury brand audiences, entrepreneurship events, and women-in-impact conversations."
+    title: "Flight Booking",
+    icon: Plane,
+    summary:
+      "International and regional flight booking support with routing advice, schedule comparison, and fare monitoring.",
+    destinations: ["Dubai", "Abu Dhabi", "Europe", "Asia", "Maldives", "Worldwide"],
+    price: "Live airline fares plus service fee where applicable",
+    processing: "Instant quotation after dates, passengers, and passport names are confirmed",
+    inclusions: ["Fare options", "Baggage guidance", "Transit advice", "Ticket confirmation"],
+    documents: ["Passenger names", "Passport details", "Travel dates", "Preferred cabin"],
+    policy: "Airline change, refund, and cancellation rules apply to every ticket."
   },
   {
-    title: "Humanitarian Ambassador",
-    detail:
-      "A service-centered chapter focused on visibility with purpose, advocacy, and community-first public engagement."
+    title: "Hotel Booking",
+    icon: Hotel,
+    summary:
+      "Luxury and budget hotel stays arranged around location, category, family needs, corporate rates, and special requests.",
+    destinations: ["Dubai", "Abu Dhabi", "Maldives", "Singapore", "Italy", "Worldwide"],
+    price: "Budget, four-star, five-star, and luxury quote ranges available",
+    processing: "Same-day shortlist after city, dates, room count, and budget are received",
+    inclusions: ["Hotel shortlist", "Room category advice", "Breakfast options", "Confirmation support"],
+    documents: ["Guest names", "Check-in date", "Check-out date", "Room preference"],
+    policy: "Cancellation windows vary by hotel, rate plan, season, and supplier."
   },
   {
-    title: "Forbes Featured Personality",
-    detail:
-      "A media milestone translated into a floating editorial world with cinematic page motion and gold-lit visual hierarchy."
+    title: "Holiday Packages",
+    icon: Globe2,
+    summary:
+      "Tailored individual and group journeys across iconic landmarks and hidden gems, planned around comfort and memorable experiences.",
+    destinations: ["France", "Iceland", "Italy", "Japan", "Maldives", "Singapore"],
+    price: "Custom package quote after travel style, dates, and hotel category",
+    processing: "Draft itinerary usually prepared after lead qualification",
+    inclusions: ["Itinerary planning", "Hotel options", "Tours", "Transfers", "Attraction tickets"],
+    documents: ["Traveller count", "Travel dates", "Budget", "Destination preferences"],
+    policy: "Package cancellation depends on each hotel, tour, airline, and attraction supplier."
   },
   {
-    title: "Luxury Brand Collaborator",
-    detail:
-      "Premium positioning for partnerships that need elegance, credibility, and memorable on-stage or editorial storytelling."
+    title: "City Tours",
+    icon: Landmark,
+    summary:
+      "Guided sightseeing in Dubai, Abu Dhabi, and Khorfakkan with comfortable day trips, local stories, and major landmarks.",
+    destinations: ["Dubai", "Abu Dhabi", "Khorfakkan"],
+    price: "Shared and private city tour options",
+    processing: "Usually confirmable after date, pickup area, and group size",
+    inclusions: ["Pickup coordination", "Guide support", "Landmark route", "Comfortable vehicle"],
+    documents: ["Lead guest name", "Pickup location", "Date", "Group size"],
+    policy: "Weather, traffic, attraction hours, and no-show terms may affect schedules."
   },
   {
-    title: "Women Leadership Advocate",
-    detail:
-      "A polished narrative of ambition, representation, and the courage to occupy global rooms with grace."
+    title: "Desert Safari",
+    icon: Sparkles,
+    summary:
+      "Private or shared desert safari experiences with dune bashing, BBQ dinner, live entertainment, and golden Arabian desert views.",
+    destinations: ["Dubai Desert", "Lahbab", "Al Awir"],
+    price: "Shared, private, premium camp, quad bike, and buggy options",
+    processing: "Same-day availability may be possible depending on season",
+    inclusions: ["Dune bashing", "BBQ dinner", "Live shows", "Pickup options"],
+    documents: ["Guest count", "Pickup area", "Date", "Private or shared preference"],
+    policy: "Activities can be adjusted for safety, weather, age, pregnancy, or health restrictions."
+  },
+  {
+    title: "Yacht Rental",
+    icon: ShipWheel,
+    summary:
+      "Private yacht dinners and luxury rides with views of Dubai Marina, Canal, Creek, and skyline routes.",
+    destinations: ["Dubai Marina", "Dubai Canal", "Dubai Creek", "Palm Jumeirah"],
+    price: "Hourly yacht rental, dinner cruise, and limousine combinations",
+    processing: "Availability check after date, hours, route, and guest count",
+    inclusions: ["Crew coordination", "Route planning", "Optional catering", "Decor add-ons"],
+    documents: ["Host name", "Date", "Guest count", "Preferred duration"],
+    policy: "Marine weather, supplier availability, and deposit rules apply."
+  },
+  {
+    title: "Airport Transfers",
+    icon: Car,
+    summary:
+      "Luxury cars and courteous drivers for airport, hotel, city, corporate, and private transfers.",
+    destinations: ["Dubai", "Abu Dhabi", "Sharjah", "Northern Emirates"],
+    price: "Sedan, SUV, van, limousine, and group transport rates",
+    processing: "Fast confirmation after flight number and pickup details",
+    inclusions: ["Driver assignment", "Flight timing support", "Pickup coordination", "Vehicle options"],
+    documents: ["Flight number", "Pickup location", "Drop location", "Passenger count"],
+    policy: "Waiting time, route changes, and late-night surcharges may apply."
+  },
+  {
+    title: "Attractions & Tickets",
+    icon: Ticket,
+    summary:
+      "Discounted tickets and smooth planning for major global attractions including Dubai Frame, Ferrari World, Atlantis, Museum of the Future, and Burj Khalifa.",
+    destinations: ["Dubai Frame", "Ferrari World", "Atlantis", "Museum of the Future", "Burj Khalifa"],
+    price: "Best available supplier pricing at time of booking",
+    processing: "Instant to same-day depending on attraction slot availability",
+    inclusions: ["Ticket options", "Slot guidance", "Entry rules", "Combination ideas"],
+    documents: ["Guest count", "Date", "Preferred time slot", "Contact number"],
+    policy: "Ticket refunds and changes depend on attraction rules and booked slot type."
+  },
+  {
+    title: "Corporate Travel",
+    icon: BriefcaseBusiness,
+    summary:
+      "Managed travel support for teams, executives, meetings, incentives, city movement, and hospitality planning.",
+    destinations: ["UAE", "GCC", "Europe", "Asia", "Worldwide"],
+    price: "Account-based quote with negotiated hotel, flight, transfer, and activity components",
+    processing: "Consultant-led onboarding for policies, approvers, travellers, and reporting",
+    inclusions: ["Traveller profiles", "Quotation workflow", "Priority support", "Reporting"],
+    documents: ["Company name", "Traveller list", "Policy requirements", "Billing details"],
+    policy: "Corporate terms are configured by agreement and supplier conditions."
   }
 ];
 
-const askKnowledge = [
+const defaultLeads: Lead[] = [
   {
-    triggers: ["known", "who", "about", "intro", "profile"],
-    answer:
-      "Amb. Dr. Isha Farha Quraishy is presented as Miss UAE, Forbes featured, a global tech celebrity, entrepreneur, humanitarian, and international public speaker."
+    id: "NT-1024",
+    name: "Aarav Mehta",
+    phone: "+971501112233",
+    whatsapp: "+971501112233",
+    email: "aarav@example.com",
+    nationality: "Indian",
+    residence: "UAE",
+    destination: "Japan",
+    travelDate: "2026-08-18",
+    returnDate: "2026-08-27",
+    adults: "2",
+    children: "1",
+    hotel: "5 Star",
+    budget: "AED 28000",
+    service: "Holiday Packages",
+    status: "Qualified",
+    priority: "High",
+    source: "WhatsApp",
+    assigned: "Sushil Agrawal",
+    updated: "Today",
+    notes: "Family holiday. Needs visa, flights, hotel, and Disney add-on."
   },
   {
-    triggers: ["forbes", "magazine", "media", "feature"],
-    answer:
-      "Her Forbes moment is treated as a signature editorial milestone, using the uploaded cover as a dimensional magazine artifact inside the experience."
+    id: "NT-1025",
+    name: "Maya Thomas",
+    phone: "+971557770001",
+    whatsapp: "+971557770001",
+    email: "maya@example.com",
+    nationality: "Filipino",
+    residence: "UAE",
+    destination: "Dubai Desert",
+    travelDate: "2026-08-02",
+    returnDate: "2026-08-02",
+    adults: "6",
+    children: "0",
+    hotel: "Not required",
+    budget: "AED 1800",
+    service: "Desert Safari",
+    status: "Quotation Sent",
+    priority: "Medium",
+    source: "Website",
+    assigned: "Sales Team",
+    updated: "1h ago",
+    notes: "Asked for private pickup and premium camp."
   },
   {
-    triggers: ["speaking", "book", "engagement", "event", "stage"],
-    answer:
-      "For speaking invitations, share the event theme, audience size, location, date range, and desired keynote or panel format through the contact section."
-  },
-  {
-    triggers: ["humanitarian", "impact", "charity", "service"],
-    answer:
-      "The site frames her humanitarian work as a central part of the public story: recognition translated into service, advocacy, and meaningful visibility."
-  },
-  {
-    triggers: ["crown", "queen", "miss uae", "pageant"],
-    answer:
-      "The crown sequence symbolizes her Miss UAE and Mrs. United Nations recognition, then dissolves into her name as the cinematic identity reveal."
+    id: "NT-1026",
+    name: "Omar Khan",
+    phone: "+971559991212",
+    whatsapp: "+971559991212",
+    email: "omar@example.com",
+    nationality: "Pakistani",
+    residence: "UAE",
+    destination: "Schengen",
+    travelDate: "2026-09-12",
+    returnDate: "2026-09-28",
+    adults: "1",
+    children: "0",
+    hotel: "4 Star",
+    budget: "AED 9000",
+    service: "Visa Services",
+    status: "New Lead",
+    priority: "High",
+    source: "Instagram",
+    assigned: "Unassigned",
+    updated: "15m ago",
+    notes: "Needs document checklist and appointment guidance."
   }
 ];
 
-function CrownScene({ progress }: { progress: number }) {
-  const crownRef = useRef<Group>(null);
-  const nameRef = useRef<Group>(null);
-  const ringRef = useRef<Mesh>(null);
+const stages = ["New Lead", "Contacted", "Qualified", "Quotation Sent", "Negotiation", "Booked", "Completed", "Lost"];
+const menuStarters = ["Hi", "Hello", "Hey", "Good Morning", "Good Evening", "Start", "Help", "Info"];
 
-  useFrame(({ clock, camera }) => {
-    const p = progress;
-    camera.position.z = 8 - p * 4.2;
-    camera.position.y = 0.4 + Math.sin(p * Math.PI) * 0.8;
-    camera.rotation.z = (p - 0.5) * 0.08;
-    if (crownRef.current) {
-      crownRef.current.rotation.y = clock.elapsedTime * 0.2 + p * 1.6;
-      crownRef.current.position.z = -p * 2.4;
-      crownRef.current.scale.setScalar(Math.max(0.45, 1 - p * 0.52));
+const blankLead: Omit<Lead, "id" | "status" | "priority" | "source" | "assigned" | "updated" | "notes"> = {
+  name: "",
+  phone: "",
+  whatsapp: "",
+  email: "",
+  nationality: "",
+  residence: "",
+  destination: "",
+  travelDate: "",
+  returnDate: "",
+  adults: "1",
+  children: "0",
+  hotel: "",
+  budget: "",
+  service: "Holiday Packages"
+};
+
+function findService(input: string) {
+  const text = input.toLowerCase();
+  return services.find((service) =>
+    [service.title, ...service.destinations, service.summary].some((item) => item.toLowerCase().includes(text) || text.includes(item.toLowerCase().split(" ")[0]))
+  );
+}
+
+function serviceAnswer(service: Service) {
+  return `${service.title}: ${service.summary}
+
+Destinations: ${service.destinations.join(", ")}.
+Price range: ${service.price}.
+Processing time: ${service.processing}.
+Inclusions: ${service.inclusions.join(", ")}.
+Required details: ${service.documents.join(", ")}.
+Cancellation/refund note: ${service.policy}
+
+Would you like me to create a quotation request? I will ask one question at a time.`;
+}
+
+export default function Home() {
+  const [dark, setDark] = useState(true);
+  const [chatOpen, setChatOpen] = useState(false);
+  const [input, setInput] = useState("");
+  const [messages, setMessages] = useState<Message[]>([
+    {
+      role: "assistant",
+      text: "Welcome to NEON TOURISM FZE. I can help with visas, flights, hotels, tours, safaris, yachts, transfers, attraction tickets, and custom holidays."
     }
-    if (nameRef.current) {
-      nameRef.current.position.z = -1.6 + p * 2;
-      nameRef.current.scale.setScalar(0.45 + p * 0.62);
+  ]);
+  const [leads, setLeads] = useState<Lead[]>(defaultLeads);
+  const [leadForm, setLeadForm] = useState(blankLead);
+  const [query, setQuery] = useState("");
+  const [activeService, setActiveService] = useState(services[0].title);
+
+  useEffect(() => {
+    const saved = window.localStorage.getItem("neon-leads");
+    if (saved) setLeads(JSON.parse(saved));
+  }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem("neon-leads", JSON.stringify(leads));
+  }, [leads]);
+
+  const filteredLeads = useMemo(() => {
+    const needle = query.toLowerCase();
+    return leads.filter((lead) => Object.values(lead).join(" ").toLowerCase().includes(needle));
+  }, [leads, query]);
+
+  const stats = useMemo(() => {
+    const booked = leads.filter((lead) => ["Booked", "Completed"].includes(lead.status)).length;
+    return [
+      ["Total Leads", leads.length.toString(), Users],
+      ["Today's Leads", "7", Clock3],
+      ["Conversion Rate", `${Math.round((booked / Math.max(leads.length, 1)) * 100)}%`, Gauge],
+      ["Revenue Pipeline", "AED 142K", CircleDollarSign],
+      ["Pending Follow-ups", "11", CalendarDays],
+      ["WhatsApp Chats", messages.length.toString(), MessageCircle]
+    ];
+  }, [leads, messages.length]);
+
+  const selectedService = services.find((service) => service.title === activeService) ?? services[0];
+
+  const addLead = () => {
+    const emailValid = /\S+@\S+\.\S+/.test(leadForm.email);
+    const phoneValid = /^\+?[0-9\s-]{8,}$/.test(leadForm.phone);
+    if (!leadForm.name || !phoneValid || !emailValid || !leadForm.destination) {
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          text: "I need a valid name, phone number, email, and destination before I can create the CRM lead."
+        }
+      ]);
+      setChatOpen(true);
+      return;
     }
-    if (ringRef.current) {
-      ringRef.current.rotation.x = clock.elapsedTime * 0.32;
-      ringRef.current.rotation.y = clock.elapsedTime * 0.45;
-    }
-  });
 
-  const crownPoints = useMemo(
-    () =>
-      Array.from({ length: 9 }, (_, i) => {
-        const x = (i - 4) * 0.55;
-        const peak = i % 2 === 0 ? 1.4 : 0.52;
-        return { x, peak };
-      }),
-    []
-  );
+    const duplicate = leads.find((lead) => lead.phone === leadForm.phone || lead.email.toLowerCase() === leadForm.email.toLowerCase());
+    const newLead: Lead = {
+      ...leadForm,
+      whatsapp: leadForm.whatsapp || leadForm.phone,
+      id: duplicate?.id ?? `NT-${1027 + leads.length}`,
+      status: duplicate ? duplicate.status : "New Lead",
+      priority: leadForm.budget ? "High" : "Medium",
+      source: "Website",
+      assigned: duplicate?.assigned ?? "Sales Team",
+      updated: "Just now",
+      notes: duplicate ? `${duplicate.notes} Updated from new enquiry.` : "Auto-created from website quotation form."
+    };
 
-  return (
-    <>
-      <PerspectiveCamera makeDefault position={[0, 0.4, 8]} fov={45} />
-      <ambientLight intensity={0.55} />
-      <pointLight position={[2, 4, 4]} intensity={38} color="#ffd66b" />
-      <pointLight position={[-4, -1, 2]} intensity={14} color="#5eead4" />
-      <group ref={crownRef} position={[0, -0.1, 0]}>
-        <Torus args={[1.9, 0.045, 16, 160]} position={[0, -0.72, 0]} rotation={[Math.PI / 2, 0, 0]}>
-          <meshStandardMaterial color="#d9aa47" emissive="#6f4d16" metalness={1} roughness={0.18} />
-        </Torus>
-        {crownPoints.map((point, index) => (
-          <Float key={point.x} speed={1.3 + index * 0.08} floatIntensity={0.22}>
-            <mesh position={[point.x, point.peak - 0.55, 0]} rotation={[0, 0, point.x * -0.18]}>
-              <coneGeometry args={[0.13, 2.55 + point.peak * 0.5, 5]} />
-              <meshStandardMaterial color="#f7d97a" emissive="#a66f12" metalness={1} roughness={0.2} />
-            </mesh>
-            <mesh position={[point.x, point.peak + 0.82, 0]}>
-              <sphereGeometry args={[0.11, 24, 24]} />
-              <meshStandardMaterial color="#fff0b4" emissive="#d9aa47" emissiveIntensity={1.5} />
-            </mesh>
-          </Float>
-        ))}
-        <mesh ref={ringRef} position={[0, 0.05, -0.25]}>
-          <torusKnotGeometry args={[1.38, 0.012, 180, 12]} />
-          <meshStandardMaterial color="#fff6c6" emissive="#d9aa47" emissiveIntensity={1.1} />
-        </mesh>
-      </group>
-      <group ref={nameRef} position={[0, -0.15, -1.2]}>
-        <Text
-          fontSize={0.42}
-          maxWidth={5.5}
-          textAlign="center"
-          color="#fff3c8"
-          anchorX="center"
-          anchorY="middle"
-        >
-          AMB. DR. ISHA FARHA QURAISHY
-        </Text>
-      </group>
-      <EffectComposer>
-        <Bloom intensity={1.35} luminanceThreshold={0.28} mipmapBlur />
-        <DepthOfField focusDistance={0.02} focalLength={0.035} bokehScale={3} />
-        <Vignette eskil={false} offset={0.22} darkness={0.75} />
-      </EffectComposer>
-      <Environment preset="night" />
-    </>
-  );
-}
-
-function PhotoPlane({ src, index, active }: { src: string; index: number; active: number }) {
-  const tex = useTexture(src);
-  const ref = useRef<Mesh>(null);
-
-  useFrame(({ clock }) => {
-    if (!ref.current) return;
-    const distance = index - active;
-    ref.current.position.x = distance * 2.3;
-    ref.current.position.z = -Math.abs(distance) * 1.1;
-    ref.current.rotation.y = distance * -0.28 + Math.sin(clock.elapsedTime + index) * 0.025;
-    ref.current.scale.setScalar(index === Math.round(active) ? 1.05 : 0.76);
-  });
-
-  return (
-    <mesh ref={ref} position={[index * 2.3, 0, 0]}>
-      <planeGeometry args={[1.65, 2.18]} />
-      <meshBasicMaterial map={tex} toneMapped={false} />
-    </mesh>
-  );
-}
-
-function GalleryScene({ progress }: { progress: number }) {
-  const active = progress * (portraits.length - 1);
-  return (
-    <>
-      <PerspectiveCamera makeDefault position={[0, 0, 4.4]} fov={42} />
-      <ambientLight intensity={1.2} />
-      {portraits.map((portrait, index) => (
-        <PhotoPlane key={portrait.src} src={portrait.src} index={index} active={active} />
-      ))}
-      <mesh position={[0, -1.5, -0.15]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[7, 2]} />
-        <MeshTransmissionMaterial color="#d9aa47" thickness={0.22} roughness={0.16} transmission={0.62} />
-      </mesh>
-      <EffectComposer>
-        <Bloom intensity={0.9} luminanceThreshold={0.4} mipmapBlur />
-      </EffectComposer>
-    </>
-  );
-}
-
-function CinematicCanvas({ crownProgress, galleryProgress }: { crownProgress: number; galleryProgress: number }) {
-  return (
-    <Canvas className="luxury-canvas h-full w-full" dpr={[1, 1.65]} gl={{ antialias: true, powerPreference: "high-performance" }}>
-      <Suspense fallback={null}>
-        {crownProgress < 0.46 ? (
-          <CrownScene progress={Math.min(crownProgress / 0.46, 1)} />
-        ) : (
-          <GalleryScene progress={galleryProgress} />
-        )}
-      </Suspense>
-    </Canvas>
-  );
-}
-
-function AskIshha() {
-  const [answer, setAnswer] = useState("Ask about Dr. Isha's crown, media, speaking, humanitarian work, or entrepreneurship.");
-  const [questionText, setQuestionText] = useState("");
-  const questions = [
-    "What is Dr. Isha known for?",
-    "Tell me about the Forbes moment.",
-    "Can I book a speaking engagement?"
-  ];
-  const answerQuestion = (question: string) => {
-    const normalized = question.toLowerCase();
-    const match = askKnowledge.find((entry) => entry.triggers.some((trigger) => normalized.includes(trigger)));
-    setAnswer(
-      match?.answer ??
-        "I can only answer questions about Amb. Dr. Isha Farha Quraishy, her media presence, speaking work, humanitarian impact, entrepreneurship, and crown journey."
-    );
+    setLeads((current) => duplicate ? current.map((lead) => (lead.id === duplicate.id ? newLead : lead)) : [newLead, ...current]);
+    setLeadForm(blankLead);
+    setMessages((current) => [
+      ...current,
+      {
+        role: "assistant",
+        text: `Lead ${newLead.id} is saved in CRM, assigned to ${newLead.assigned}, queued for WhatsApp confirmation, email confirmation, quotation request, and follow-up reminder.`
+      }
+    ]);
+    setChatOpen(true);
   };
 
-  const submitQuestion = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    answerQuestion(questionText);
+  const sendMessage = (message = input) => {
+    if (!message.trim()) return;
+    const userMessage: Message = { role: "user", text: message };
+    const normalized = message.trim().toLowerCase();
+    let reply = "";
+
+    if (menuStarters.some((starter) => normalized === starter.toLowerCase())) {
+      reply = `Welcome to NEON TOURISM FZE!
+
+We're delighted to help you plan your perfect journey.
+
+Please select one of our services below: ${services.map((service) => service.title).join(", ")}.`;
+    } else {
+      const service = findService(message);
+      if (service) {
+        setActiveService(service.title);
+        reply = serviceAnswer(service);
+      } else if (normalized.includes("price") || normalized.includes("quote") || normalized.includes("book")) {
+        reply = "Absolutely. I can prepare a quotation request. May I have your full name first?";
+      } else if (normalized.includes("contact") || normalized.includes("phone") || normalized.includes("whatsapp")) {
+        reply = "You can reach NEON TOURISM FZE in Dubai at +971 557529042 on phone or WhatsApp, or email sushil@neontourism.com.";
+      } else {
+        reply =
+          "I am sorry, I could not find that in the Neon Tourism knowledge base. I will transfer this to a human travel consultant so you receive accurate guidance.";
+      }
+    }
+
+    setMessages((current) => [...current, userMessage, { role: "assistant", text: reply }]);
+    setInput("");
+  };
+
+  const moveLead = (leadId: string, status: string) => {
+    setLeads((current) => current.map((lead) => (lead.id === leadId ? { ...lead, status, updated: "Just now" } : lead)));
   };
 
   return (
-    <div className="glass mx-auto grid max-w-5xl gap-6 rounded-[2rem] p-5 sm:p-8 md:grid-cols-[0.8fr_1.2fr]">
-      <div className="relative grid min-h-64 place-items-center overflow-hidden rounded-3xl bg-white/5">
-        <div className="absolute h-44 w-44 rounded-full border border-gold/40 bg-gold/10 blur-2xl" />
-        <motion.div
-          animate={{ rotate: 360, scale: [1, 1.08, 1] }}
-          transition={{ rotate: { duration: 18, repeat: Infinity, ease: "linear" }, scale: { duration: 3, repeat: Infinity } }}
-          className="relative grid h-36 w-36 place-items-center rounded-full border border-gold/60 bg-[radial-gradient(circle,#fff7d1_0%,#d9aa47_38%,rgba(217,170,71,.08)_72%)] shadow-aureate"
-        >
-          <Bot className="h-14 w-14 text-navy" aria-hidden="true" />
-        </motion.div>
-      </div>
-      <div className="flex flex-col justify-center">
-        <p className="mb-2 text-sm uppercase tracking-[0.32em] text-gold">Ask Ishha</p>
-        <h2 className="font-display text-4xl text-white sm:text-5xl">A holographic guide to her story</h2>
-        <p className="mt-4 min-h-20 text-base leading-7 text-white/76">{answer}</p>
-        <div className="mt-6 flex flex-wrap gap-3">
-          {questions.map((question) => (
-            <button
-              key={question}
-              onClick={() => answerQuestion(question)}
-              className="min-h-11 cursor-pointer rounded-full border border-white/15 bg-white/8 px-4 py-2 text-sm text-white/86 transition hover:border-gold hover:text-champagne focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
-            >
-              {question}
+    <main className={dark ? "theme-dark" : "theme-light"}>
+      <div className="site-shell">
+        <header className="nav">
+          <a className="brand" href="#home" aria-label="NEON TOURISM FZE home">
+            <span className="brand-mark">N</span>
+            <span>
+              <strong>NEON TOURISM FZE</strong>
+              <small>Dubai travel concierge</small>
+            </span>
+          </a>
+          <nav aria-label="Primary navigation">
+            {["Services", "AI Agent", "CRM", "Dashboard", "Contact"].map((item) => (
+              <a key={item} href={`#${item.toLowerCase().replace(" ", "-")}`}>{item}</a>
+            ))}
+          </nav>
+          <div className="nav-actions">
+            <button className="icon-button" aria-label="Toggle menu"><Menu size={18} /></button>
+            <button className="mode-toggle" onClick={() => setDark((value) => !value)} aria-label="Toggle light and dark mode">
+              {dark ? "Light" : "Dark"}
             </button>
-          ))}
-        </div>
-        <form onSubmit={submitQuestion} className="mt-5 flex min-h-12 gap-2 rounded-full border border-white/15 bg-navy/55 p-1.5">
-          <label htmlFor="ask-ishha" className="sr-only">
-            Ask Ishha a question about Dr. Isha
-          </label>
-          <input
-            id="ask-ishha"
-            value={questionText}
-            onChange={(event) => setQuestionText(event.target.value)}
-            className="min-w-0 flex-1 bg-transparent px-4 text-sm text-white outline-none placeholder:text-white/45"
-            placeholder="Ask about her journey..."
-          />
-          <button
-            type="submit"
-            className="grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full bg-gold text-navy transition hover:bg-champagne focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
-            aria-label="Send question"
-          >
-            <Send className="h-4 w-4" aria-hidden="true" />
-          </button>
-        </form>
+          </div>
+        </header>
+
+        <section id="home" className="hero-section">
+          <div className="hero-copy">
+            <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} className="eyebrow">
+              Travel simplified from Dubai
+            </motion.p>
+            <motion.h1 initial={{ opacity: 0, y: 18 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.08 }}>
+              AI-powered journeys, human travel expertise.
+            </motion.h1>
+            <p>
+              A premium travel website, WhatsApp sales agent, CRM, booking desk, and analytics cockpit for NEON TOURISM FZE, grounded in the company’s real services and Dubai contact details.
+            </p>
+            <div className="hero-actions">
+              <Button onClick={() => document.getElementById("booking")?.scrollIntoView({ behavior: "smooth" })}><CalendarDays size={16} /> Book Now</Button>
+              <Button variant="glass" onClick={() => setChatOpen(true)}><MessageCircle size={16} /> WhatsApp Us</Button>
+              <Button variant="glass" onClick={() => document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" })}><Contact size={16} /> Talk To Expert</Button>
+            </div>
+            <div className="trust-row">
+              {["4+ years trusted service", "Best price guidance", "Instant bookings", "Experienced guides"].map((item) => <span key={item}>{item}</span>)}
+            </div>
+          </div>
+          <div className="hero-visual" aria-label="Dubai travel services preview">
+            <img src="https://neontourism.com/wp-content/uploads/2024/11/listing-6.jpg" alt="Luxury destination coastline promoted by Neon Tourism" />
+            <div className="floating-panel top-panel">
+              <Bot size={20} />
+              <span>RAG assistant searched 10 service records</span>
+            </div>
+            <div className="floating-panel bottom-panel">
+              <BarChart3 size={20} />
+              <span>CRM pipeline live: {leads.length} active leads</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="section intro-grid" id="about">
+          <div>
+            <p className="eyebrow">Welcome to Neon Tourism</p>
+            <h2>Discover the world, one place at a time.</h2>
+          </div>
+          <p>
+            Neon Tourism plans cost-effective, comfortable, and memorable journeys across the globe, with tailored packages for individuals and groups, luxury cars with courteous drivers, city tours, day trips, attraction tickets, and custom travel support.
+          </p>
+        </section>
+
+        <section id="services" className="section">
+          <div className="section-heading">
+            <p className="eyebrow">What do we offer?</p>
+            <h2>Every public service rebuilt as a premium booking path.</h2>
+          </div>
+          <div className="service-grid">
+            {services.map((service) => {
+              const Icon = service.icon;
+              return (
+                <button key={service.title} onClick={() => setActiveService(service.title)} className={`service-card ${activeService === service.title ? "active" : ""}`}>
+                  <Icon size={24} />
+                  <strong>{service.title}</strong>
+                  <span>{service.summary}</span>
+                </button>
+              );
+            })}
+          </div>
+          <div className="knowledge-card">
+            <div>
+              <p className="eyebrow">Knowledge base answer</p>
+              <h3>{selectedService.title}</h3>
+              <p>{selectedService.summary}</p>
+            </div>
+            <div className="detail-grid">
+              <InfoBlock title="Destinations" value={selectedService.destinations.join(", ")} />
+              <InfoBlock title="Price Range" value={selectedService.price} />
+              <InfoBlock title="Processing" value={selectedService.processing} />
+              <InfoBlock title="Required Details" value={selectedService.documents.join(", ")} />
+            </div>
+          </div>
+        </section>
+
+        <section id="ai-agent" className="section split">
+          <div>
+            <p className="eyebrow">Human-like WhatsApp AI</p>
+            <h2>Answers from company knowledge, then captures the lead one question at a time.</h2>
+            <p>
+              The assistant recognizes greeting intents, shows a service menu, searches the Neon service base before answering, validates quote requests, logs conversation history, and transfers unknown questions to a human consultant.
+            </p>
+            <div className="mini-list">
+              {["Interactive service menu", "RAG-style service matching", "Duplicate-aware CRM updates", "Human handoff for unavailable information"].map((item) => (
+                <span key={item}><Check size={16} /> {item}</span>
+              ))}
+            </div>
+          </div>
+          <ChatPanel messages={messages} input={input} setInput={setInput} sendMessage={sendMessage} />
+        </section>
+
+        <section id="booking" className="section split">
+          <div>
+            <p className="eyebrow">Booking and quotation system</p>
+            <h2>Create a validated CRM lead and trigger the automation flow.</h2>
+            <p>
+              Submitting this form creates or updates a customer profile, assigns a lead ID, logs the source, queues confirmations, schedules follow-up, and places the lead in the sales pipeline.
+            </p>
+          </div>
+          <form className="lead-form" onSubmit={(event) => { event.preventDefault(); addLead(); }}>
+            {[
+              ["name", "Full Name"],
+              ["phone", "Mobile Number"],
+              ["whatsapp", "WhatsApp Number"],
+              ["email", "Email Address"],
+              ["nationality", "Nationality"],
+              ["residence", "Country of Residence"],
+              ["destination", "Destination"],
+              ["travelDate", "Travel Date"],
+              ["returnDate", "Return Date"],
+              ["adults", "Adults"],
+              ["children", "Children"],
+              ["hotel", "Preferred Hotel Category"],
+              ["budget", "Budget"]
+            ].map(([key, label]) => (
+              <label key={key}>
+                <span>{label}</span>
+                <input
+                  type={key.toLowerCase().includes("date") ? "date" : key === "email" ? "email" : "text"}
+                  value={leadForm[key as keyof typeof leadForm]}
+                  onChange={(event) => setLeadForm((current) => ({ ...current, [key]: event.target.value }))}
+                />
+              </label>
+            ))}
+            <label>
+              <span>Interested Service</span>
+              <select value={leadForm.service} onChange={(event) => setLeadForm((current) => ({ ...current, service: event.target.value }))}>
+                {services.map((service) => <option key={service.title}>{service.title}</option>)}
+              </select>
+            </label>
+            <Button type="submit"><Plus size={16} /> Generate Quotation Request</Button>
+          </form>
+        </section>
+
+        <section id="crm" className="section">
+          <div className="section-heading">
+            <p className="eyebrow">CRM and global search</p>
+            <h2>Customer profiles, messages, notes, statuses, and bookings in one operating view.</h2>
+          </div>
+          <div className="search-bar">
+            <Search size={18} />
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search customers, leads, bookings, packages, countries, services, messages, and notes" />
+          </div>
+          <div className="crm-table">
+            {filteredLeads.map((lead) => (
+              <article key={lead.id}>
+                <div>
+                  <strong>{lead.name}</strong>
+                  <span>{lead.id} / {lead.service} / {lead.destination}</span>
+                </div>
+                <div>{lead.phone}</div>
+                <div>{lead.budget}</div>
+                <select value={lead.status} onChange={(event) => moveLead(lead.id, event.target.value)} aria-label={`Update status for ${lead.name}`}>
+                  {stages.map((stage) => <option key={stage}>{stage}</option>)}
+                </select>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="section">
+          <div className="section-heading">
+            <p className="eyebrow">Sales pipeline</p>
+            <h2>Kanban pipeline with drag-style stage controls.</h2>
+          </div>
+          <div className="kanban">
+            {stages.map((stage) => (
+              <div key={stage} className="kanban-column">
+                <h3>{stage}</h3>
+                {leads.filter((lead) => lead.status === stage).map((lead) => (
+                  <article key={lead.id} draggable onDragEnd={() => moveLead(lead.id, stage)}>
+                    <strong>{lead.name}</strong>
+                    <span>{lead.service}</span>
+                    <small>{lead.destination} / {lead.priority}</small>
+                  </article>
+                ))}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="dashboard" className="section">
+          <div className="section-heading">
+            <p className="eyebrow">Sales analytics dashboard</p>
+            <h2>Live operational metrics for travel sales teams.</h2>
+          </div>
+          <div className="stats-grid">
+            {stats.map(([label, value, Icon]) => (
+              <article key={label as string}>
+                <Icon size={22} />
+                <span>{label as string}</span>
+                <strong>{value as string}</strong>
+              </article>
+            ))}
+          </div>
+          <div className="analytics-grid">
+            <ChartCard title="Popular Services" items={services.slice(0, 6).map((service, index) => [service.title, 92 - index * 9])} />
+            <ChartCard title="Lead Sources" items={[["WhatsApp", 74], ["Website", 58], ["Instagram", 44], ["Referral", 31]]} />
+            <div className="admin-card">
+              <LockKeyhole size={22} />
+              <h3>Admin Panel</h3>
+              <p>Role-based sections for Admin, Sales Manager, and Sales Executive.</p>
+              <div className="mini-list compact">
+                {["Manage users", "Manage services", "Packages and prices", "FAQs and promotions", "Knowledge uploads", "WhatsApp templates"].map((item) => <span key={item}>{item}</span>)}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="contact" className="section contact-section">
+          <div>
+            <p className="eyebrow">Contact</p>
+            <h2>Talk to NEON TOURISM FZE.</h2>
+            <p>Founder and CEO: Sushil Agrawal</p>
+          </div>
+          <div className="contact-grid">
+            <a href="tel:+971557529042"><MessageCircle size={18} /> +971 557529042</a>
+            <a href="mailto:sushil@neontourism.com"><Mail size={18} /> sushil@neontourism.com</a>
+            <a href="mailto:agrawal.sushil55@gmail.com"><Mail size={18} /> agrawal.sushil55@gmail.com</a>
+            <a href="https://www.instagram.com/neon.tourism"><Globe2 size={18} /> Instagram</a>
+            <span><MapPin size={18} /> Dubai, UAE</span>
+            <span><Building2 size={18} /> NEON TOURISM FZE</span>
+          </div>
+        </section>
       </div>
+
+      <button className="whatsapp-float" onClick={() => setChatOpen(true)} aria-label="Open WhatsApp AI sales agent">
+        <MessageCircle size={22} />
+      </button>
+
+      {chatOpen && (
+        <div className="chat-drawer" role="dialog" aria-modal="true" aria-label="WhatsApp AI sales agent">
+          <button className="close-chat" onClick={() => setChatOpen(false)} aria-label="Close WhatsApp AI sales agent"><X size={18} /></button>
+          <ChatPanel messages={messages} input={input} setInput={setInput} sendMessage={sendMessage} compact />
+        </div>
+      )}
+    </main>
+  );
+}
+
+function InfoBlock({ title, value }: { title: string; value: string }) {
+  return (
+    <div className="info-block">
+      <span>{title}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
 
-export default function Home() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: containerRef, offset: ["start start", "end end"] });
-  const smooth = useSpring(scrollYProgress, { stiffness: 80, damping: 24, mass: 0.3 });
-  const [progress, setProgress] = useState(0);
-  const heroOpacity = useTransform(smooth, [0.11, 0.18, 0.32], [0, 1, 0]);
-  const timelineOpacity = useTransform(smooth, [0.31, 0.4, 0.53], [0, 1, 0]);
-  const galaxyOpacity = useTransform(smooth, [0.49, 0.58, 0.7], [0, 1, 0]);
-  const forbesOpacity = useTransform(smooth, [0.64, 0.72, 0.83], [0, 1, 0]);
-  const contactOpacity = useTransform(smooth, [0.83, 0.92], [0, 1]);
-  const [selectedAchievement, setSelectedAchievement] = useState<(typeof achievements)[number] | null>(null);
-  const [selectedPortrait, setSelectedPortrait] = useState<(typeof portraits)[number] | null>(null);
-
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger);
-    const lenis = new Lenis({ lerp: 0.08, smoothWheel: true });
-    const raf = (time: number) => {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
-    return () => lenis.destroy();
-  }, []);
-
-  useEffect(() => smooth.on("change", setProgress), [smooth]);
-
-  const galleryProgress = Math.min(Math.max((progress - 0.46) / 0.34, 0), 1);
-  const scrollToProgress = (target: number) => {
-    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
-    window.scrollTo({ top: maxScroll * target, behavior: "smooth" });
-  };
-
+function ChatPanel({
+  messages,
+  input,
+  setInput,
+  sendMessage,
+  compact = false
+}: {
+  messages: Message[];
+  input: string;
+  setInput: (value: string) => void;
+  sendMessage: (message?: string) => void;
+  compact?: boolean;
+}) {
   return (
-    <main ref={containerRef} className="film-grain relative scroll-length text-white">
-      <div className="cinematic-layer">
-        <CinematicCanvas crownProgress={progress} galleryProgress={galleryProgress} />
+    <div className={`chat-panel ${compact ? "compact-chat" : ""}`}>
+      <div className="chat-header">
+        <Bot size={22} />
+        <div>
+          <strong>Neon AI Travel Consultant</strong>
+          <span>Knowledge-grounded WhatsApp flow</span>
+        </div>
       </div>
-      <Particles
-        id="gold-particles"
-        className="particle-layer"
-        options={{
-          fpsLimit: 60,
-          background: { color: "transparent" },
-          particles: {
-            number: { value: 90, density: { enable: true, width: 1200, height: 900 } },
-            color: { value: ["#d9aa47", "#fff3c8", "#5eead4"] },
-            opacity: { value: { min: 0.2, max: 0.8 } },
-            size: { value: { min: 1, max: 3 } },
-            move: { enable: true, speed: 0.45, direction: "none", outModes: "out" },
-            links: { enable: true, color: "#d9aa47", opacity: 0.12, distance: 130 }
-          },
-          detectRetina: true
-        }}
-      />
-      <div className="vignette-layer bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,8,23,.22)_58%,rgba(2,8,23,.82)_100%)]" />
+      <div className="message-list">
+        {messages.map((message, index) => (
+          <p key={`${message.role}-${index}`} className={message.role}>{message.text}</p>
+        ))}
+      </div>
+      <div className="service-menu">
+        {services.slice(0, 8).map((service) => (
+          <button key={service.title} onClick={() => sendMessage(service.title)}>{service.title}</button>
+        ))}
+      </div>
+      <form onSubmit={(event) => { event.preventDefault(); sendMessage(); }} className="chat-input">
+        <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask about visas, safaris, yachts, tickets..." />
+        <button aria-label="Send message"><Send size={16} /></button>
+      </form>
+    </div>
+  );
+}
 
-      <section className="intro-layer">
-        <motion.div style={{ opacity: useTransform(smooth, [0, 0.08, 0.14], [1, 1, 0]) }}>
-          <p className="text-sm uppercase tracking-[0.42em] text-gold">Every Queen Begins With A Crown.</p>
-          <h1 className="mt-5 max-w-5xl font-display text-5xl leading-none text-white sm:text-7xl lg:text-8xl">
-            AMB. DR. ISHA FARHA QURAISHY
-          </h1>
-          <ChevronDown className="mx-auto mt-10 h-8 w-8 animate-bounce text-gold" aria-hidden="true" />
-        </motion.div>
-      </section>
-
-      <motion.section
-        style={{ opacity: heroOpacity }}
-        className="story-layer hero-layer px-5 pb-10 pt-24 sm:px-8 lg:px-14"
-      >
-        <div className="grid w-full items-end gap-7 lg:grid-cols-[1fr_0.95fr]">
-          <div>
-            <p className="mb-3 text-sm uppercase tracking-[0.36em] text-gold">Cinematic Legacy</p>
-            <h2 className="max-w-4xl font-display text-5xl leading-[0.95] sm:text-7xl lg:text-8xl">
-              Crowned presence. Global influence. Human impact.
-            </h2>
-            <div className="mt-6 flex flex-wrap gap-3">
-              {titles.map((title) => (
-                <span key={title} className="glass rounded-full px-4 py-2 text-sm text-white/86">
-                  {title}
-                </span>
-              ))}
-            </div>
-            <div className="pointer-events-auto mt-8 flex flex-wrap gap-3">
-              <Button onClick={() => scrollToProgress(0.4)}><Sparkles className="h-4 w-4" /> Explore Journey</Button>
-              <Button variant="glass" onClick={() => scrollToProgress(0.86)}><Bot className="h-4 w-4" /> Ask Ishha</Button>
-              <Button variant="glass" onClick={() => scrollToProgress(0.94)}><CalendarDays className="h-4 w-4" /> Book Speaking Engagement</Button>
-            </div>
-          </div>
-          <div className="glass pointer-events-auto overflow-hidden rounded-[2rem] p-3">
-            <div className="logo-river flex w-max gap-3 py-2">
-              {[...logos, ...logos].map(([name, info], index) => (
-                <div
-                  key={`${name}-${index}`}
-                  tabIndex={0}
-                  className="group relative w-52 shrink-0 rounded-2xl border border-white/10 bg-navy/65 p-4 transition duration-300 hover:-translate-y-2 hover:rotate-2 hover:border-gold hover:shadow-aureate focus:outline-none focus-visible:border-gold"
-                >
-                  <p className="font-display text-3xl text-white group-hover:text-champagne">{name}</p>
-                  <p className="mt-3 text-xs leading-5 text-white/58 opacity-0 transition group-hover:opacity-100 group-focus:opacity-100">{info}</p>
-                </div>
-              ))}
-            </div>
-          </div>
+function ChartCard({ title, items }: { title: string; items: (string | number)[][] }) {
+  return (
+    <article className="chart-card">
+      <h3>{title}</h3>
+      {items.map(([label, value]) => (
+        <div key={label as string} className="bar-row">
+          <span>{label as string}</span>
+          <div><i style={{ width: `${value}%` }} /></div>
+          <strong>{value as number}%</strong>
         </div>
-      </motion.section>
-
-      <motion.section style={{ opacity: timelineOpacity }} className="story-layer center-layer px-5">
-        <div className="w-full max-w-6xl">
-          <p className="text-center text-sm uppercase tracking-[0.36em] text-gold">Journey Timeline</p>
-          <h2 className="mx-auto mt-3 max-w-3xl text-center font-display text-5xl sm:text-6xl">Milestones connected by light</h2>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {milestones.map((milestone, index) => (
-              <motion.article
-                key={milestone}
-                initial={false}
-                animate={{ y: Math.sin(progress * 14 + index) * 10 }}
-                className="glass rounded-3xl p-5"
-              >
-                <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-gold text-navy">
-                  <Star className="h-5 w-5" aria-hidden="true" />
-                </div>
-                <h3 className="font-display text-3xl">{milestone}</h3>
-                <p className="mt-3 text-sm leading-6 text-white/68">
-                  A cinematic waypoint in a story of visibility, ambition, and service.
-                </p>
-              </motion.article>
-            ))}
-          </div>
-        </div>
-      </motion.section>
-
-      <motion.section style={{ opacity: galaxyOpacity }} className="story-layer center-layer px-5">
-        <div className="w-full max-w-6xl">
-          <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
-            <div className="lg:w-1/3">
-              <p className="text-sm uppercase tracking-[0.36em] text-gold">Achievement Galaxy</p>
-              <h2 className="mt-3 font-display text-5xl sm:text-6xl">Hover a star, open a chapter.</h2>
-            </div>
-            <div className="grid flex-1 gap-4 sm:grid-cols-2">
-              {achievements.map((achievement, index) => (
-                <button
-                  key={achievement.title}
-                  onClick={() => setSelectedAchievement(achievement)}
-                  className="glass group min-h-36 cursor-pointer rounded-3xl p-5 text-left transition hover:-translate-y-2 hover:border-gold hover:shadow-aureate focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
-                >
-                  <Trophy className="mb-5 h-7 w-7 text-gold" aria-hidden="true" />
-                  <span className="font-display text-3xl text-white">{achievement.title}</span>
-                  <span className="mt-3 block text-sm leading-6 text-white/0 transition group-hover:text-white/72">
-                    {achievement.detail}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      <motion.section style={{ opacity: forbesOpacity }} className="story-layer center-layer px-5">
-        <div className="grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[0.8fr_1.1fr]">
-          <motion.div
-            animate={{ rotateY: [-9, 8, -9], y: [-8, 8, -8] }}
-            transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-            className="glass mx-auto w-full max-w-sm rounded-[2rem] p-3"
-          >
-            <Image
-              src="/images/isha-forbes-cover.png"
-              alt="Forbes New York style cover featuring Dr. Isha Farha Quraishy"
-              width={900}
-              height={1125}
-              className="aspect-[4/5] rounded-[1.35rem] object-cover"
-              priority
-            />
-          </motion.div>
-          <div>
-            <p className="text-sm uppercase tracking-[0.36em] text-gold">Forbes Experience</p>
-            <h2 className="mt-3 font-display text-5xl sm:text-7xl">A floating magazine moment with gold page turns.</h2>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-white/72">
-              The editorial cover becomes a dimensional artifact: suspended, luminous, and surrounded by liquid-gold ribbons that signal the next media chapter.
-            </p>
-          </div>
-        </div>
-      </motion.section>
-
-      <motion.section style={{ opacity: contactOpacity }} className="story-layer contact-layer px-5 py-20">
-        <div className="mx-auto flex min-h-full max-w-6xl flex-col justify-center gap-10">
-          <AskIshha />
-          <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
-            <div className="stage-lights glass rounded-3xl p-6">
-              <Mic2 className="mb-5 h-7 w-7 text-gold" aria-hidden="true" />
-              <h3 className="font-display text-3xl">Public Speaking</h3>
-              <p className="mt-3 text-sm leading-6 text-white/70">Stage-inspired spotlights, executive presence, and international audience energy for keynotes, panels, awards nights, and leadership summits.</p>
-              <div className="mt-6 grid grid-cols-3 gap-2 text-center text-xs uppercase tracking-[0.16em] text-white/62">
-                <span className="rounded-full border border-white/10 py-2">Keynotes</span>
-                <span className="rounded-full border border-white/10 py-2">Panels</span>
-                <span className="rounded-full border border-white/10 py-2">Media</span>
-              </div>
-            </div>
-            <div className="glass rounded-3xl p-6">
-              <p className="text-sm uppercase tracking-[0.32em] text-gold">Contact</p>
-              <h2 className="mt-2 font-display text-5xl">Invite Amb. Dr. Isha Farha Quraishy</h2>
-              <p className="mt-4 text-sm leading-6 text-white/70">
-                For speaking, media, partnerships, and humanitarian collaborations, prepare a concise brief with location, date, audience, format, and desired outcome.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <Button><Mail className="h-4 w-4" /> Start a Conversation</Button>
-                <Button variant="glass"><ArrowRight className="h-4 w-4" /> Media & Partnerships</Button>
-              </div>
-            </div>
-          </div>
-          <div className="glass rounded-3xl p-5">
-            <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-sm uppercase tracking-[0.32em] text-gold">Media Gallery</p>
-                <h2 className="font-display text-4xl text-white">Floating frames, full-screen reveals</h2>
-              </div>
-              <Images className="h-7 w-7 text-gold" aria-hidden="true" />
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {portraits.map((portrait, index) => (
-                <button
-                  key={portrait.src}
-                  onClick={() => setSelectedPortrait(portrait)}
-                  className="gallery-card group relative aspect-[4/5] cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
-                  aria-label={`Open ${portrait.alt}`}
-                >
-                  <Image src={portrait.src} alt={portrait.alt} fill sizes="(min-width: 1024px) 18vw, (min-width: 640px) 45vw, 90vw" className="object-cover transition duration-500 group-hover:scale-110" />
-                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy via-navy/50 to-transparent p-4 text-xs uppercase tracking-[0.16em] text-champagne">
-                    Frame {String(index + 1).padStart(2, "0")}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </motion.section>
-
-      {selectedAchievement && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 grid place-items-center bg-navy/86 px-5 backdrop-blur-2xl"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="achievement-title"
-        >
-          <div className="liquid-gold glass relative max-w-3xl overflow-hidden rounded-[2rem] p-8 sm:p-10">
-            <button
-              onClick={() => setSelectedAchievement(null)}
-              className="absolute right-4 top-4 grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:border-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
-              aria-label="Close achievement detail"
-            >
-              <X className="h-5 w-5" aria-hidden="true" />
-            </button>
-            <p className="text-sm uppercase tracking-[0.36em] text-gold">Achievement Galaxy</p>
-            <h2 id="achievement-title" className="mt-4 max-w-2xl font-display text-5xl leading-none text-white sm:text-7xl">
-              {selectedAchievement.title}
-            </h2>
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/76">{selectedAchievement.detail}</p>
-          </div>
-        </motion.div>
-      )}
-
-      {selectedPortrait && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 grid place-items-center bg-navy/90 p-5 backdrop-blur-2xl"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Expanded media gallery image"
-        >
-          <button
-            onClick={() => setSelectedPortrait(null)}
-            className="absolute right-5 top-5 z-10 grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:border-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
-            aria-label="Close media image"
-          >
-            <X className="h-5 w-5" aria-hidden="true" />
-          </button>
-          <div className="relative h-[82vh] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-gold/30 shadow-aureate">
-            <Image src={selectedPortrait.src} alt={selectedPortrait.alt} fill sizes="90vw" className="object-contain" />
-          </div>
-        </motion.div>
-      )}
-    </main>
+      ))}
+    </article>
   );
 }

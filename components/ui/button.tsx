@@ -9,9 +9,9 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-gold text-navy shadow-aureate hover:bg-champagne focus-visible:outline-gold",
+          "bg-[linear-gradient(135deg,#00b7c7,#2854ff)] text-white shadow-[0_16px_44px_rgba(0,183,199,.28)] hover:translate-y-[-1px] focus-visible:outline-[#00b7c7]",
         glass:
-          "border border-white/20 bg-white/10 text-white backdrop-blur-xl hover:border-gold/70 hover:text-champagne focus-visible:outline-white"
+          "border border-[var(--line)] bg-[var(--surface)] text-[var(--text)] backdrop-blur-xl hover:border-[#00b7c7] hover:translate-y-[-1px] focus-visible:outline-[#00b7c7]"
       }
     },
     defaultVariants: {

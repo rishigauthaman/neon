@@ -1,0 +1,163 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  SALES_MANAGER
+  SALES_EXECUTIVE
+}
+
+enum LeadStatus {
+  NEW_LEAD
+  CONTACTED
+  QUALIFIED
+  QUOTATION_SENT
+  NEGOTIATION
+  BOOKED
+  COMPLETED
+  LOST
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  role      Role     @default(SALES_EXECUTIVE)
+  leads     Lead[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Customer {
+  id            String         @id @default(cuid())
+  name          String
+  phone         String         @unique
+  whatsapp      String?
+  email         String?        @unique
+  nationality   String?
+  residence     String?
+  leads         Lead[]
+  conversations Conversation[]
+  bookings      Booking[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Lead {
+  id             String     @id
+  customerId     String
+  customer       Customer   @relation(fields: [customerId], references: [id])
+  interestedService String
+  destination    String?
+  travelDate     DateTime?
+  returnDate     DateTime?
+  adults         Int        @default(1)
+  children       Int        @default(0)
+  hotelCategory  String?
+  budget         String?
+  status         LeadStatus @default(NEW_LEAD)
+  priority       String     @default("Medium")
+  source         String     @default("Website")
+  assignedUserId String?
+  assignedUser   User?      @relation(fields: [assignedUserId], references: [id])
+  followUpDate   DateTime?
+  notes          String?
+  tags           String[]
+  bookings       Booking[]
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+}
+
+model Conversation {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  channel     String   @default("WhatsApp")
+  transcript  Json
+  handoff     Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Booking {
+  id          String   @id @default(cuid())
+  customerId  String
+  customer    Customer @relation(fields: [customerId], references: [id])
+  leadId      String?
+  lead        Lead?    @relation(fields: [leadId], references: [id])
+  service     String
+  status      String   @default("Requested")
+  amount      Decimal?
+  travelDate  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model TravelService {
+  id          String          @id @default(cuid())
+  name        String          @unique
+  summary     String
+  inclusions  String[]
+  documents   String[]
+  policy      String?
+  packages    TravelPackage[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model TravelPackage {
+  id          String        @id @default(cuid())
+  serviceId   String
+  service     TravelService @relation(fields: [serviceId], references: [id])
+  title       String
+  destination String
+  priceFrom   Decimal?
+  inclusions  String[]
+  active      Boolean       @default(true)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+}
+
+model KnowledgeDocument {
+  id        String           @id @default(cuid())
+  sourceUrl String?
+  title     String
+  type      String
+  chunks    KnowledgeChunk[]
+  createdAt DateTime         @default(now())
+}
+
+model KnowledgeChunk {
+  id         String            @id @default(cuid())
+  documentId String
+  document   KnowledgeDocument @relation(fields: [documentId], references: [id])
+  content    String
+  metadata   Json?
+  embedding  Unsupported("vector(1536)")?
+  createdAt  DateTime          @default(now())
+}
+
+model AutomationTask {
+  id        String   @id @default(cuid())
+  leadId    String?
+  type      String
+  status    String   @default("Pending")
+  payload   Json?
+  runAt     DateTime?
+  createdAt DateTime @default(now())
+}
+
+model AuditEvent {
+  id        String   @id @default(cuid())
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+}
