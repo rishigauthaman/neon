@@ -14,23 +14,21 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://neon-tourism-fze.openai.site"),
-  title: "NEON TOURISM FZE | AI Travel, WhatsApp Sales Agent, CRM",
+  metadataBase: new URL("https://neon-ai-crm.netlify.app"),
+  title: "NEON WhatsApp AI Bot + CRM",
   description:
-    "Premium AI-powered travel platform for NEON TOURISM FZE with website, WhatsApp sales agent, CRM, booking system, admin tools, and analytics dashboard.",
+    "Three-page WhatsApp AI lead collection app with CRM and dashboard for NEON TOURISM FZE.",
   openGraph: {
-    title: "NEON TOURISM FZE",
+    title: "NEON WhatsApp AI Bot + CRM",
     description:
-      "Dubai travel concierge platform combining luxury website, WhatsApp AI, CRM, booking, and sales analytics.",
-    images: ["https://neontourism.com/wp-content/uploads/2024/11/listing-6.jpg"],
+      "Focused AI bot, CRM, and dashboard app for collecting and managing travel leads.",
     type: "website"
   },
   twitter: {
-    card: "summary_large_image",
-    title: "NEON TOURISM FZE",
+    card: "summary",
+    title: "NEON WhatsApp AI Bot + CRM",
     description:
-      "AI-powered travel website and CRM for Neon Tourism in Dubai.",
-    images: ["https://neontourism.com/wp-content/uploads/2024/11/listing-6.jpg"]
+      "Focused AI bot, CRM, and dashboard app for collecting and managing travel leads."
   }
 };
 
