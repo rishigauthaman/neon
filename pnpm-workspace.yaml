@@ -1,0 +1,8 @@
+allowBuilds:
+  '@tsparticles/engine': true
+  sharp: true
+  unrs-resolver: true
+onlyBuiltDependencies:
+  - "@tsparticles/engine"
+  - sharp
+  - unrs-resolver
