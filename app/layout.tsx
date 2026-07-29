@@ -14,6 +14,7 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://amb-dr-isha-farha-quraishy.openai.site"),
   title: "Amb. Dr. Isha Farha Quraishy | Cinematic Portfolio",
   description:
     "A luxury 3D digital journey for Amb. Dr. Isha Farha Quraishy: Miss UAE, Forbes featured personality, speaker, humanitarian, and entrepreneur.",
@@ -21,6 +22,14 @@ export const metadata: Metadata = {
     title: "Amb. Dr. Isha Farha Quraishy",
     description:
       "Cinematic 3D portfolio experience for a global tech celebrity and public speaker.",
+    images: ["/images/isha-forbes-cover.png"],
+    type: "website"
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Amb. Dr. Isha Farha Quraishy",
+    description:
+      "Luxury cinematic 3D portfolio experience for Amb. Dr. Isha Farha Quraishy.",
     images: ["/images/isha-forbes-cover.png"]
   }
 };

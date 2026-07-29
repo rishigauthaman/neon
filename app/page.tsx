@@ -23,11 +23,14 @@ import {
   Bot,
   CalendarDays,
   ChevronDown,
+  Images,
   Mail,
   Mic2,
+  Send,
   Sparkles,
   Star,
-  Trophy
+  Trophy,
+  X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { Group, Mesh } from "three";
@@ -74,12 +77,64 @@ const milestones = [
 ];
 
 const achievements = [
-  "Global Tech Celebrity",
-  "International Public Speaker",
-  "Humanitarian Ambassador",
-  "Forbes Featured Personality",
-  "Luxury Brand Collaborator",
-  "Women Leadership Advocate"
+  {
+    title: "Global Tech Celebrity",
+    detail:
+      "A public persona shaped around technology, leadership visibility, and future-facing cultural influence across global audiences."
+  },
+  {
+    title: "International Public Speaker",
+    detail:
+      "Stage presence designed for leadership forums, luxury brand audiences, entrepreneurship events, and women-in-impact conversations."
+  },
+  {
+    title: "Humanitarian Ambassador",
+    detail:
+      "A service-centered chapter focused on visibility with purpose, advocacy, and community-first public engagement."
+  },
+  {
+    title: "Forbes Featured Personality",
+    detail:
+      "A media milestone translated into a floating editorial world with cinematic page motion and gold-lit visual hierarchy."
+  },
+  {
+    title: "Luxury Brand Collaborator",
+    detail:
+      "Premium positioning for partnerships that need elegance, credibility, and memorable on-stage or editorial storytelling."
+  },
+  {
+    title: "Women Leadership Advocate",
+    detail:
+      "A polished narrative of ambition, representation, and the courage to occupy global rooms with grace."
+  }
+];
+
+const askKnowledge = [
+  {
+    triggers: ["known", "who", "about", "intro", "profile"],
+    answer:
+      "Amb. Dr. Isha Farha Quraishy is presented as Miss UAE, Forbes featured, a global tech celebrity, entrepreneur, humanitarian, and international public speaker."
+  },
+  {
+    triggers: ["forbes", "magazine", "media", "feature"],
+    answer:
+      "Her Forbes moment is treated as a signature editorial milestone, using the uploaded cover as a dimensional magazine artifact inside the experience."
+  },
+  {
+    triggers: ["speaking", "book", "engagement", "event", "stage"],
+    answer:
+      "For speaking invitations, share the event theme, audience size, location, date range, and desired keynote or panel format through the contact section."
+  },
+  {
+    triggers: ["humanitarian", "impact", "charity", "service"],
+    answer:
+      "The site frames her humanitarian work as a central part of the public story: recognition translated into service, advocacy, and meaningful visibility."
+  },
+  {
+    triggers: ["crown", "queen", "miss uae", "pageant"],
+    answer:
+      "The crown sequence symbolizes her Miss UAE and Mrs. United Nations recognition, then dissolves into her name as the cinematic identity reveal."
+  }
 ];
 
 function CrownScene({ progress }: { progress: number }) {
@@ -209,7 +264,7 @@ function GalleryScene({ progress }: { progress: number }) {
 
 function CinematicCanvas({ crownProgress, galleryProgress }: { crownProgress: number; galleryProgress: number }) {
   return (
-    <Canvas dpr={[1, 1.65]} gl={{ antialias: true, powerPreference: "high-performance" }}>
+    <Canvas className="luxury-canvas h-full w-full" dpr={[1, 1.65]} gl={{ antialias: true, powerPreference: "high-performance" }}>
       <Suspense fallback={null}>
         {crownProgress < 0.46 ? (
           <CrownScene progress={Math.min(crownProgress / 0.46, 1)} />
@@ -223,21 +278,24 @@ function CinematicCanvas({ crownProgress, galleryProgress }: { crownProgress: nu
 
 function AskIshha() {
   const [answer, setAnswer] = useState("Ask about Dr. Isha's crown, media, speaking, humanitarian work, or entrepreneurship.");
+  const [questionText, setQuestionText] = useState("");
   const questions = [
     "What is Dr. Isha known for?",
     "Tell me about the Forbes moment.",
     "Can I book a speaking engagement?"
   ];
   const answerQuestion = (question: string) => {
-    const responses: Record<string, string> = {
-      "What is Dr. Isha known for?":
-        "Amb. Dr. Isha Farha Quraishy is presented here as Miss UAE, a Forbes featured public figure, global tech celebrity, humanitarian, entrepreneur, and international public speaker.",
-      "Tell me about the Forbes moment.":
-        "The Forbes experience is staged as a floating editorial artifact, honoring the uploaded Forbes New York cover as a signature media milestone.",
-      "Can I book a speaking engagement?":
-        "Yes. Use the Book Speaking Engagement button or the contact panel to share event details, audience size, location, and preferred dates."
-    };
-    setAnswer(responses[question]);
+    const normalized = question.toLowerCase();
+    const match = askKnowledge.find((entry) => entry.triggers.some((trigger) => normalized.includes(trigger)));
+    setAnswer(
+      match?.answer ??
+        "I can only answer questions about Amb. Dr. Isha Farha Quraishy, her media presence, speaking work, humanitarian impact, entrepreneurship, and crown journey."
+    );
+  };
+
+  const submitQuestion = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    answerQuestion(questionText);
   };
 
   return (
@@ -261,12 +319,31 @@ function AskIshha() {
             <button
               key={question}
               onClick={() => answerQuestion(question)}
-              className="rounded-full border border-white/15 bg-white/8 px-4 py-2 text-sm text-white/86 transition hover:border-gold hover:text-champagne"
+              className="min-h-11 cursor-pointer rounded-full border border-white/15 bg-white/8 px-4 py-2 text-sm text-white/86 transition hover:border-gold hover:text-champagne focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
             >
               {question}
             </button>
           ))}
         </div>
+        <form onSubmit={submitQuestion} className="mt-5 flex min-h-12 gap-2 rounded-full border border-white/15 bg-navy/55 p-1.5">
+          <label htmlFor="ask-ishha" className="sr-only">
+            Ask Ishha a question about Dr. Isha
+          </label>
+          <input
+            id="ask-ishha"
+            value={questionText}
+            onChange={(event) => setQuestionText(event.target.value)}
+            className="min-w-0 flex-1 bg-transparent px-4 text-sm text-white outline-none placeholder:text-white/45"
+            placeholder="Ask about her journey..."
+          />
+          <button
+            type="submit"
+            className="grid h-11 w-11 shrink-0 cursor-pointer place-items-center rounded-full bg-gold text-navy transition hover:bg-champagne focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold"
+            aria-label="Send question"
+          >
+            <Send className="h-4 w-4" aria-hidden="true" />
+          </button>
+        </form>
       </div>
     </div>
   );
@@ -282,6 +359,8 @@ export default function Home() {
   const galaxyOpacity = useTransform(smooth, [0.49, 0.58, 0.7], [0, 1, 0]);
   const forbesOpacity = useTransform(smooth, [0.64, 0.72, 0.83], [0, 1, 0]);
   const contactOpacity = useTransform(smooth, [0.83, 0.92], [0, 1]);
+  const [selectedAchievement, setSelectedAchievement] = useState<(typeof achievements)[number] | null>(null);
+  const [selectedPortrait, setSelectedPortrait] = useState<(typeof portraits)[number] | null>(null);
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger);
@@ -297,15 +376,19 @@ export default function Home() {
   useEffect(() => smooth.on("change", setProgress), [smooth]);
 
   const galleryProgress = Math.min(Math.max((progress - 0.46) / 0.34, 0), 1);
+  const scrollToProgress = (target: number) => {
+    const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+    window.scrollTo({ top: maxScroll * target, behavior: "smooth" });
+  };
 
   return (
     <main ref={containerRef} className="film-grain relative scroll-length text-white">
-      <div className="fixed inset-0 z-0">
+      <div className="cinematic-layer">
         <CinematicCanvas crownProgress={progress} galleryProgress={galleryProgress} />
       </div>
       <Particles
         id="gold-particles"
-        className="fixed inset-0 z-10"
+        className="particle-layer"
         options={{
           fpsLimit: 60,
           background: { color: "transparent" },
@@ -320,9 +403,9 @@ export default function Home() {
           detectRetina: true
         }}
       />
-      <div className="pointer-events-none fixed inset-0 z-20 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,8,23,.22)_58%,rgba(2,8,23,.82)_100%)]" />
+      <div className="vignette-layer bg-[radial-gradient(circle_at_center,transparent_0%,rgba(2,8,23,.22)_58%,rgba(2,8,23,.82)_100%)]" />
 
-      <section className="pointer-events-none fixed inset-0 z-30 grid place-items-center px-5 text-center">
+      <section className="intro-layer">
         <motion.div style={{ opacity: useTransform(smooth, [0, 0.08, 0.14], [1, 1, 0]) }}>
           <p className="text-sm uppercase tracking-[0.42em] text-gold">Every Queen Begins With A Crown.</p>
           <h1 className="mt-5 max-w-5xl font-display text-5xl leading-none text-white sm:text-7xl lg:text-8xl">
@@ -334,7 +417,7 @@ export default function Home() {
 
       <motion.section
         style={{ opacity: heroOpacity }}
-        className="fixed inset-0 z-30 flex items-end px-5 pb-10 pt-24 sm:px-8 lg:px-14"
+        className="story-layer hero-layer px-5 pb-10 pt-24 sm:px-8 lg:px-14"
       >
         <div className="grid w-full items-end gap-7 lg:grid-cols-[1fr_0.95fr]">
           <div>
@@ -350,9 +433,9 @@ export default function Home() {
               ))}
             </div>
             <div className="pointer-events-auto mt-8 flex flex-wrap gap-3">
-              <Button><Sparkles className="h-4 w-4" /> Explore Journey</Button>
-              <Button variant="glass"><Bot className="h-4 w-4" /> Ask Ishha</Button>
-              <Button variant="glass"><CalendarDays className="h-4 w-4" /> Book Speaking Engagement</Button>
+              <Button onClick={() => scrollToProgress(0.4)}><Sparkles className="h-4 w-4" /> Explore Journey</Button>
+              <Button variant="glass" onClick={() => scrollToProgress(0.86)}><Bot className="h-4 w-4" /> Ask Ishha</Button>
+              <Button variant="glass" onClick={() => scrollToProgress(0.94)}><CalendarDays className="h-4 w-4" /> Book Speaking Engagement</Button>
             </div>
           </div>
           <div className="glass pointer-events-auto overflow-hidden rounded-[2rem] p-3">
@@ -372,7 +455,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      <motion.section style={{ opacity: timelineOpacity }} className="fixed inset-0 z-30 grid place-items-center px-5">
+      <motion.section style={{ opacity: timelineOpacity }} className="story-layer center-layer px-5">
         <div className="w-full max-w-6xl">
           <p className="text-center text-sm uppercase tracking-[0.36em] text-gold">Journey Timeline</p>
           <h2 className="mx-auto mt-3 max-w-3xl text-center font-display text-5xl sm:text-6xl">Milestones connected by light</h2>
@@ -397,7 +480,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      <motion.section style={{ opacity: galaxyOpacity }} className="fixed inset-0 z-30 grid place-items-center px-5">
+      <motion.section style={{ opacity: galaxyOpacity }} className="story-layer center-layer px-5">
         <div className="w-full max-w-6xl">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center">
             <div className="lg:w-1/3">
@@ -407,13 +490,14 @@ export default function Home() {
             <div className="grid flex-1 gap-4 sm:grid-cols-2">
               {achievements.map((achievement, index) => (
                 <button
-                  key={achievement}
-                  className="glass group min-h-36 rounded-3xl p-5 text-left transition hover:-translate-y-2 hover:border-gold hover:shadow-aureate"
+                  key={achievement.title}
+                  onClick={() => setSelectedAchievement(achievement)}
+                  className="glass group min-h-36 cursor-pointer rounded-3xl p-5 text-left transition hover:-translate-y-2 hover:border-gold hover:shadow-aureate focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
                 >
                   <Trophy className="mb-5 h-7 w-7 text-gold" aria-hidden="true" />
-                  <span className="font-display text-3xl text-white">{achievement}</span>
+                  <span className="font-display text-3xl text-white">{achievement.title}</span>
                   <span className="mt-3 block text-sm leading-6 text-white/0 transition group-hover:text-white/72">
-                    Fullscreen detail energy, editorial polish, and a gold-lit reveal built into the interaction.
+                    {achievement.detail}
                   </span>
                 </button>
               ))}
@@ -422,7 +506,7 @@ export default function Home() {
         </div>
       </motion.section>
 
-      <motion.section style={{ opacity: forbesOpacity }} className="fixed inset-0 z-30 grid place-items-center px-5">
+      <motion.section style={{ opacity: forbesOpacity }} className="story-layer center-layer px-5">
         <div className="grid w-full max-w-6xl items-center gap-8 lg:grid-cols-[0.8fr_1.1fr]">
           <motion.div
             animate={{ rotateY: [-9, 8, -9], y: [-8, 8, -8] }}
@@ -448,26 +532,107 @@ export default function Home() {
         </div>
       </motion.section>
 
-      <motion.section style={{ opacity: contactOpacity }} className="fixed inset-0 z-30 overflow-y-auto px-5 py-20">
+      <motion.section style={{ opacity: contactOpacity }} className="story-layer contact-layer px-5 py-20">
         <div className="mx-auto flex min-h-full max-w-6xl flex-col justify-center gap-10">
           <AskIshha />
-          <div className="grid gap-5 md:grid-cols-3">
-            <div className="glass rounded-3xl p-6">
+          <div className="grid gap-5 lg:grid-cols-[0.95fr_1.05fr]">
+            <div className="stage-lights glass rounded-3xl p-6">
               <Mic2 className="mb-5 h-7 w-7 text-gold" aria-hidden="true" />
               <h3 className="font-display text-3xl">Public Speaking</h3>
-              <p className="mt-3 text-sm leading-6 text-white/70">Stage-inspired spotlights, executive presence, and international audience energy.</p>
+              <p className="mt-3 text-sm leading-6 text-white/70">Stage-inspired spotlights, executive presence, and international audience energy for keynotes, panels, awards nights, and leadership summits.</p>
+              <div className="mt-6 grid grid-cols-3 gap-2 text-center text-xs uppercase tracking-[0.16em] text-white/62">
+                <span className="rounded-full border border-white/10 py-2">Keynotes</span>
+                <span className="rounded-full border border-white/10 py-2">Panels</span>
+                <span className="rounded-full border border-white/10 py-2">Media</span>
+              </div>
             </div>
-            <div className="glass rounded-3xl p-6 md:col-span-2">
+            <div className="glass rounded-3xl p-6">
               <p className="text-sm uppercase tracking-[0.32em] text-gold">Contact</p>
               <h2 className="mt-2 font-display text-5xl">Invite Amb. Dr. Isha Farha Quraishy</h2>
+              <p className="mt-4 text-sm leading-6 text-white/70">
+                For speaking, media, partnerships, and humanitarian collaborations, prepare a concise brief with location, date, audience, format, and desired outcome.
+              </p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Button><Mail className="h-4 w-4" /> Start a Conversation</Button>
                 <Button variant="glass"><ArrowRight className="h-4 w-4" /> Media & Partnerships</Button>
               </div>
             </div>
           </div>
+          <div className="glass rounded-3xl p-5">
+            <div className="mb-5 flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-sm uppercase tracking-[0.32em] text-gold">Media Gallery</p>
+                <h2 className="font-display text-4xl text-white">Floating frames, full-screen reveals</h2>
+              </div>
+              <Images className="h-7 w-7 text-gold" aria-hidden="true" />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {portraits.map((portrait, index) => (
+                <button
+                  key={portrait.src}
+                  onClick={() => setSelectedPortrait(portrait)}
+                  className="gallery-card group relative aspect-[4/5] cursor-pointer overflow-hidden rounded-2xl border border-white/10 bg-white/5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+                  aria-label={`Open ${portrait.alt}`}
+                >
+                  <Image src={portrait.src} alt={portrait.alt} fill sizes="(min-width: 1024px) 18vw, (min-width: 640px) 45vw, 90vw" className="object-cover transition duration-500 group-hover:scale-110" />
+                  <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-navy via-navy/50 to-transparent p-4 text-xs uppercase tracking-[0.16em] text-champagne">
+                    Frame {String(index + 1).padStart(2, "0")}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
       </motion.section>
+
+      {selectedAchievement && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-50 grid place-items-center bg-navy/86 px-5 backdrop-blur-2xl"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="achievement-title"
+        >
+          <div className="liquid-gold glass relative max-w-3xl overflow-hidden rounded-[2rem] p-8 sm:p-10">
+            <button
+              onClick={() => setSelectedAchievement(null)}
+              className="absolute right-4 top-4 grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:border-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+              aria-label="Close achievement detail"
+            >
+              <X className="h-5 w-5" aria-hidden="true" />
+            </button>
+            <p className="text-sm uppercase tracking-[0.36em] text-gold">Achievement Galaxy</p>
+            <h2 id="achievement-title" className="mt-4 max-w-2xl font-display text-5xl leading-none text-white sm:text-7xl">
+              {selectedAchievement.title}
+            </h2>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-white/76">{selectedAchievement.detail}</p>
+          </div>
+        </motion.div>
+      )}
+
+      {selectedPortrait && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 grid place-items-center bg-navy/90 p-5 backdrop-blur-2xl"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Expanded media gallery image"
+        >
+          <button
+            onClick={() => setSelectedPortrait(null)}
+            className="absolute right-5 top-5 z-10 grid h-11 w-11 cursor-pointer place-items-center rounded-full border border-white/15 bg-white/10 text-white transition hover:border-gold focus-visible:outline focus-visible:outline-2 focus-visible:outline-gold"
+            aria-label="Close media image"
+          >
+            <X className="h-5 w-5" aria-hidden="true" />
+          </button>
+          <div className="relative h-[82vh] w-full max-w-5xl overflow-hidden rounded-[2rem] border border-gold/30 shadow-aureate">
+            <Image src={selectedPortrait.src} alt={selectedPortrait.alt} fill sizes="90vw" className="object-contain" />
+          </div>
+        </motion.div>
+      )}
     </main>
   );
 }
